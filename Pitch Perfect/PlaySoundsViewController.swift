@@ -10,20 +10,20 @@ import UIKit
 import AVFoundation
 
 class PlaySoundsViewController: UIViewController {
-     var audioPlayer: AVAudioPlayer?
-       override func viewDidLoad() {
+    var audioPlayer: AVAudioPlayer!;
+    var receivedAudio : RecordedAudio!;
+    
+    
+    override func viewDidLoad() {
         super.viewDidLoad()
-        let filePatUrl = NSURL.fileURLWithPath(
-            NSBundle.mainBundle().pathForResource("movie_quote",
-                ofType: "mp3")!)
-        
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOfURL: filePatUrl);
-            
-        } catch {
-            print("audioPlayer error")
-        }
-                // Do any additional setup after loading the view.
+//        if let filePath = NSBundle.mainBundle().pathForResource("movie_quote",ofType: "mp3"){
+//            let filePathUrl = NSURL.fileURLWithPath(filePath);
+//            
+//        }else{
+//            print("audioPlayer error")
+//        }
+        audioPlayer =  try! AVAudioPlayer(contentsOfURL: receivedAudio.filePathUrl)
+        audioPlayer.enableRate = true;
     }
 
     override func didReceiveMemoryWarning() {
@@ -32,11 +32,28 @@ class PlaySoundsViewController: UIViewController {
     }
     
     @IBAction func PlaySlowEffect(sender: UIButton) {
-        audioPlayer?.play();
+        playAudioAtRate(0.5);
   
        
     }
 
+   
+    @IBAction func playFastSound(sender: UIButton) {
+        playAudioAtRate(1.5);
+    }
+
+    
+    @IBAction func stopSound(sender: UIButton) {
+        audioPlayer.stop();
+        audioPlayer.currentTime = 0.0;
+    }
+    
+    func playAudioAtRate(rate: Float){
+        audioPlayer.stop();
+        audioPlayer.rate = rate;
+        audioPlayer.currentTime = 0.0;
+        audioPlayer.play();
+    }
     /*
     // MARK: - Navigation
 
