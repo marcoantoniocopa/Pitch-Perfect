@@ -29,7 +29,8 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
 
     @IBAction func recordAudio(sender: UIButton) {
        
-        recordingInProgress.hidden = false;
+        recordingInProgress.text = "Recording";
+        //recordingInProgress.hidden = false;
         stopButton.hidden = false;
         recordButton.enabled = false;
         //TODO: Record the user's voice.
@@ -72,7 +73,8 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
         }
     }
     @IBAction func stopRecordAudio(sender: UIButton) {
-        recordingInProgress.hidden = true;
+        //recordingInProgress.hidden = true;
+        recordingInProgress.text = "Tap to Record"
         // Stop recording
         audioRecorder.stop();
         let audioSession = AVAudioSession.sharedInstance();
@@ -82,6 +84,7 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
     }
     
     override func viewWillAppear(animated: Bool) {
+        recordingInProgress.text = "Tap to Record";
         stopButton.hidden = true;
         recordButton.enabled = true;
     }
