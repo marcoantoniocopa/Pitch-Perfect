@@ -10,7 +10,8 @@ import UIKit
 import AVFoundation
 
 class PlaySoundsViewController: UIViewController {
-    var audioPlayer: AVAudioPlayer!;
+   
+    // global variables
     var receivedAudio : RecordedAudio!;
     var audioEngine: AVAudioEngine!;
     var audioFile: AVAudioFile!;
@@ -18,10 +19,8 @@ class PlaySoundsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        audioPlayer =  try! AVAudioPlayer(contentsOfURL: receivedAudio.filePathUrl)
-        audioPlayer.enableRate = true;
-        audioEngine = AVAudioEngine()
+        
+        audioEngine = AVAudioEngine();
         audioFile = try! AVAudioFile(forReading: receivedAudio.filePathUrl)
         
     }
@@ -32,69 +31,157 @@ class PlaySoundsViewController: UIViewController {
     }
     
    
+    //** function to play the recording with a slow effect changing the rate value */
     @IBAction func playSlowAudio(sender: UIButton) {
-        playAudioAtRate(0.5);
+        playAudioWithMultipleEffect(0.5, pitch: 1.0, echo: 0, reverb: 0)
 
     }
 
+    //** function to play the recording with a  fast rate */
     @IBAction func playFastAudio(sender: UIButton) {
-        playAudioAtRate(1.5);
+        playAudioWithMultipleEffect(1.5, pitch: 1.0, echo: 0, reverb: 0)
     }
  
+    //** function to play the recording with a chipmunk effect changing the pitch value*/
     @IBAction func playChipmunkAudio(sender: UIButton) {
-        playAudioWithVariablePitch(1000);
-        
+        playAudioWithMultipleEffect(1, pitch: 1000, echo: 0, reverb: 0)
     }
     
+    //** function to play the recording with a  darth vader effect changing the pitch value*/
     @IBAction func playDarthvaderAudio(sender: AnyObject) {
-        playAudioWithVariablePitch(-1000);
-        
+        playAudioWithMultipleEffect(1, pitch: -1000, echo: 0, reverb: 0)
     }
     
+    //** function to play the recording with a reverb effect*/
+    @IBAction func playReverbAudio(sender: UIButton) {
+        playAudioWithMultipleEffect(1, pitch: 1.0, echo: 0, reverb: 50)
+    }
+    
+    //** function to play the recording with a echo effect*/
+    @IBAction func playEchoAudio(sender: UIButton) {
+        playAudioWithMultipleEffect(1, pitch: 1.0, echo: 0.2, reverb: 0)
+    }
+    
+    //** function to stop and reset the audio */
     @IBAction func stopSound(sender: UIButton) {
-        audioPlayer.stop();
-        audioPlayer.currentTime = 0.0;
         audioEngine.stop();
         audioEngine.reset();
+
     }
     
-    func playAudioAtRate(rate: Float){
-        audioPlayer.stop();
-        audioEngine.stop();
-        audioEngine.reset();
-        audioPlayer.rate = rate;
-        audioPlayer.currentTime = 0.0;
-        audioPlayer.play();
-    }
-    
-    func playAudioWithVariablePitch(pitch: Float){
-        audioPlayer.stop();
-        audioEngine.stop();
-        audioEngine.reset();
+    /**
+        It reproduce an audio with multiples effects.
+        - parameters:
+            - rate: the rate value, default value of 1.0
+            - pitch: the pitch value. The default value is 1.0. The range of values is -2400 to 2400.
+            - echo: the delay time value. The default value is 50.
+            - reverb: reverb the wetDryMix value. Range between 0 (all dry) -> 100 (all wet)
+        - remark: This is a super-easy method.
+    */
+    func playAudioWithMultipleEffect(rate: Float, pitch: Float, echo: Float, reverb: Float){
         
         let audioPlayerNode = AVAudioPlayerNode();
+        audioPlayerNode.stop();
+        
+        audioEngine.stop();
+        audioEngine.reset();
+        
         audioEngine.attachNode(audioPlayerNode);
         
-        let changePitchEffect = AVAudioUnitTimePitch();
-        changePitchEffect.pitch = pitch;
-        audioEngine.attachNode(changePitchEffect);
         
-        audioEngine.connect(audioPlayerNode, to: changePitchEffect, format: nil);
-        audioEngine.connect(changePitchEffect, to: audioEngine.outputNode, format: nil);
+        // Setting the pitch and rate effect
+        let audioUnitTimeEffect = AVAudioUnitTimePitch()
+        audioUnitTimeEffect.pitch = pitch
+        audioUnitTimeEffect.rate = rate
+        audioEngine.attachNode(audioUnitTimeEffect)
         
+        // Setting the echo effect
+        let echoEffect = AVAudioUnitDelay()
+        echoEffect.delayTime = NSTimeInterval(echo)
+        audioEngine.attachNode(echoEffect)
+        
+        // Setting the reverb effect
+        let reverbEffect = AVAudioUnitReverb()
+        reverbEffect.loadFactoryPreset(AVAudioUnitReverbPreset.Cathedral)
+        reverbEffect.wetDryMix = reverb
+        audioEngine.attachNode(reverbEffect)
+        
+        
+        
+        // connect effects between them, ending with the output
+        audioEngine.connect(audioPlayerNode, to: audioUnitTimeEffect, format: nil)
+        audioEngine.connect(audioUnitTimeEffect, to: echoEffect, format: nil)
+        audioEngine.connect(echoEffect, to: reverbEffect, format: nil)
+        audioEngine.connect(reverbEffect, to: audioEngine.outputNode, format: nil)
         audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: nil);
         
         try! audioEngine.start();
         audioPlayerNode.play();
     }
-    /*
-    // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    /**
+     It reproduce an audio selecting one parameter of type AVAudioUnit and editing their value.
+     - parameters:
+     - audioChangeValue: the value of the new effect
+     - typeOfEffect: type of effect that you want apply _options:_ pitch, rate, echo ,reverb
+     - experiment: this method is redundant.
+     */
+    func playAudioWithOneEffect(audioChangeValue: Float, typeOfEffect: String){
+        
+        let audioPlayerNode = AVAudioPlayerNode();
+        audioPlayerNode.stop();
+        audioEngine.stop();
+        audioEngine.reset();
+        audioEngine.attachNode(audioPlayerNode);
+        
+        let changeAudioUnitTimeEffect = AVAudioUnitTimePitch();
+        
+        // Setting the reverb effect
+        let reverbEffect = AVAudioUnitReverb()
+        reverbEffect.loadFactoryPreset(AVAudioUnitReverbPreset.Cathedral)
+        
+        // Setting the echo effect on a specific interval
+        let echoEffect = AVAudioUnitDelay()
+        
+        switch typeOfEffect {
+            
+            case "rate" :
+                changeAudioUnitTimeEffect.rate = audioChangeValue
+                changeAudioUnitTimeEffect.pitch = 0
+                echoEffect.delayTime = 0
+                reverbEffect.wetDryMix =  0
+            
+            case "pitch" :
+                changeAudioUnitTimeEffect.pitch = audioChangeValue
+                changeAudioUnitTimeEffect.rate = 1
+                echoEffect.delayTime = 0
+                reverbEffect.wetDryMix =  0
+            
+            case "reverb" :
+                reverbEffect.wetDryMix = audioChangeValue
+                echoEffect.delayTime = 0
+                changeAudioUnitTimeEffect.pitch = 0
+                changeAudioUnitTimeEffect.rate = 1
+            
+            case "echo" :
+                echoEffect.delayTime = NSTimeInterval(audioChangeValue)
+                reverbEffect.wetDryMix =  0
+                changeAudioUnitTimeEffect.rate = 1
+            
+            default: break
+        }
+        
+        audioEngine.attachNode(reverbEffect)
+        audioEngine.attachNode(echoEffect)
+        audioEngine.attachNode(changeAudioUnitTimeEffect);
+        
+        audioEngine.connect(audioPlayerNode, to: changeAudioUnitTimeEffect, format: nil);
+        audioEngine.connect(changeAudioUnitTimeEffect, to: reverbEffect, format: nil);
+        audioEngine.connect(reverbEffect, to: echoEffect, format: nil);
+        audioEngine.connect(echoEffect, to: audioEngine.outputNode, format: nil);
+        audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: nil);
+        try! audioEngine.start();
+        audioPlayerNode.play();
     }
-    */
-
+    
 }
