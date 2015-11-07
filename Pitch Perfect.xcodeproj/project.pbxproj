@@ -53,6 +53,7 @@
 		B1CFD22B1BB0F73600638965 /* Pitch PerfectUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Pitch PerfectUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1CFD22F1BB0F73600638965 /* Pitch_PerfectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pitch_PerfectUITests.swift; sourceTree = "<group>"; };
 		B1CFD2311BB0F73600638965 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1D9955A1BEDB6A400386BAA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -309,9 +310,11 @@
 			isa = PBXVariantGroup;
 			children = (
 				B1CFD2141BB0F73500638965 /* Base */,
+				B1D9955A1BEDB6A400386BAA /* en */,
 			);
 			name = Main.storyboard;
-			sourceTree = "<group>";
+			path = "/Users/marcoM/Proyectos/xcode/Pitch Perfect/Pitch Perfect";
+			sourceTree = "<absolute>";
 		};
 		B1CFD2181BB0F73500638965 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
